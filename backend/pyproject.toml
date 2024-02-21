@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backend"
+authors = [
+    {name = "Brian Kessel", email = "brian.kessel@student.nmt.edu"},
+]
+description = "Backend for the VectorDb file explorer"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    'langchain',
+    "uvicorn",
+    "chromadb",
+]
+dynamic = ["version"]
