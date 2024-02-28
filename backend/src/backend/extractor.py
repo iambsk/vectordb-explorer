@@ -29,4 +29,3 @@ class Extractor:
 
     def content(self,file: str):
         return self.documents
-
