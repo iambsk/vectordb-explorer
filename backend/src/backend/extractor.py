@@ -1,18 +1,26 @@
 import textract
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
+from typing import List
+
+class Document(BaseModel):
+    text: str
+    metadata: dict
+
+
+
 
 class Extractor:
-    def __init__(self):
-
-        self.documents = None
-
+    def __init__(self,
+                 chunk_size: int = 512,
+                 chunk_overlap: int = 80):
         # init splitter
         self.splitter = RecursiveCharacterTextSplitter(
-            chunk_size=512,
-            chunk_overlap=80
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
         )
 
-    def extract_to_langchain(self, file: str):
+    def extract_to_documents(self, file: str) -> List[Document]:
         content: list[str] = textract.process(file).decode('utf-8')
         metadata: dict = {} #include filename
 
@@ -25,7 +33,5 @@ class Extractor:
         }
 
         # Create LangChain documents from sections
-        self.documents = [{"text": section, "metadata": metadata} for section in sections]
+        return [Document(text=section.page_content,metadata=metadata) for section in sections]
 
-    def content(self,file: str):
-        return self.documents

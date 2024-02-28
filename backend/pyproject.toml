@@ -15,5 +15,6 @@ dependencies = [
     'langchain',
     "uvicorn",
     "chromadb",
+    "textract"
 ]
 dynamic = ["version"]
