@@ -1,17 +1,31 @@
-# Extract text from file, section it with langchain sectioner, then make langchain documents
-# include metadata in documents
-# use textract
 import textract
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class Extractor:
-    # def __init__():
+    def __init__(self):
 
-    def extract_to_langchain(self,file: str):
-        content: str = textract.process(file)
+        self.documents = None
+
+        # init splitter
+        self.splitter = RecursiveCharacterTextSplitter(
+            chunk_size=512,
+            chunk_overlap=80
+        )
+
+    def extract_to_langchain(self, file: str):
+        content: list[str] = textract.process(file).decode('utf-8')
         metadata: dict = {} #include filename
-        # extract
-        # section
-    
+
+        # Use sectioner to organize content into sections
+        sections = self.splitter.create_documents(content)
+
+        # prepare metadata
+        metadata = {
+            "filename": file, # add other metadata when needed
+        }
+
+        # Create LangChain documents from sections
+        self.documents = [{"text": section, "metadata": metadata} for section in sections]
+
     def content(self,file: str):
-        # just returns the content of the file
-        pass
+        return self.documents
