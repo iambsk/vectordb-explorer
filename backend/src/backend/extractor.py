@@ -1,17 +1,37 @@
-# Extract text from file, section it with langchain sectioner, then make langchain documents
-# include metadata in documents
-# use textract
 import textract
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
+from typing import List
+
+class Document(BaseModel):
+    text: str
+    metadata: dict
+
+
+
 
 class Extractor:
-    # def __init__():
+    def __init__(self,
+                 chunk_size: int = 512,
+                 chunk_overlap: int = 80):
+        # init splitter
+        self.splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
 
-    def extract_to_langchain(self,file: str):
-        content: str = textract.process(file)
+    def extract_to_documents(self, file: str) -> List[Document]:
+        content: list[str] = textract.process(file).decode('utf-8')
         metadata: dict = {} #include filename
-        # extract
-        # section
-    
-    def content(self,file: str):
-        # just returns the content of the file
-        pass
+
+        # Use sectioner to organize content into sections
+        sections = self.splitter.create_documents(content)
+
+        # prepare metadata
+        metadata = {
+            "filename": file, # add other metadata when needed
+        }
+
+        # Create LangChain documents from sections
+        return [Document(text=section.page_content,metadata=metadata) for section in sections]
+
