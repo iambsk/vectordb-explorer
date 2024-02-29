@@ -7,6 +7,8 @@ from typing import List, Optional, Dict, Any
 import os
 import uuid
 
+
+
 class FileDB:
     def __init__(self, 
                  folder: str,
@@ -22,7 +24,7 @@ class FileDB:
         self.file_types = ["pdf","txt"] 
         # reload() ensure everything upto date on start
     
-    def reload(self):
+    def sync(self):
         # this will check every file and add the missing ones
         # use tqdm to show iteration over all the files ?
         for file in os.listdir(self.folder):
@@ -44,7 +46,6 @@ class FileDB:
         query_texts: Optional[List[str]] = None,
         n_results: int = 10,
         where: Optional[Dict[str, str]] = None,
-        where_document: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[Document]:
         """Query the chroma collection."""
@@ -52,7 +53,6 @@ class FileDB:
             query_texts=query_texts,
             n_results=n_results,
             where=where,
-            where_document=where_document,
             **kwargs,
         )
 

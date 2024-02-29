@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 
 
 class Ui_MainWindow(object):
@@ -53,7 +53,7 @@ class Ui_MainWindow(object):
         self.searchBar = QtWidgets.QLineEdit(self.widget2)
         self.searchBar.setObjectName("searchBar")
         self.verticalLayout.addWidget(self.searchBar)
-        self.listView = QtWidgets.QListView(self.widget2)
+        self.listView = QtWidgets.QListView(self.widget2)   
         self.listView.setObjectName("listView")
         self.verticalLayout.addWidget(self.listView)
         self.horizontalLayout.addWidget(self.splitter)
@@ -71,6 +71,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actionNew = QtWidgets.QAction(MainWindow)
         self.actionNew.setObjectName("actionNew")
+        self.actionNew.triggered.connect(self.openFileDialog)
         self.actionExit = QtWidgets.QAction(MainWindow)
         self.actionExit.setObjectName("actionExit")
         self.menuFile.addAction(self.actionNew)
@@ -81,6 +82,9 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
+        """
+        Set the text and titles of the widgets in the UI
+        """
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.treeLabel.setText(_translate("MainWindow", "Files"))
@@ -90,7 +94,15 @@ class Ui_MainWindow(object):
         self.menuView.setTitle(_translate("MainWindow", "View"))
         self.actionNew.setText(_translate("MainWindow", "New"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
-
+    
+    
+    def openFileDialog(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(None, "Open File", "", "All Files (*);;Text Files (*.txt)", options=options)
+        if fileName:
+            print("Selected file:", fileName)
+            
+            
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
