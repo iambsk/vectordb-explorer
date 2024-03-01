@@ -53,9 +53,19 @@ class Ui_MainWindow(object):
         self.searchBar = QtWidgets.QLineEdit(self.widget2)
         self.searchBar.setObjectName("searchBar")
         self.verticalLayout.addWidget(self.searchBar)
+        self.searchBar.textChanged.connect(self.searchList)
+        
+        # INIT LIST VIEW
+        
         self.listView = QtWidgets.QListView(self.widget2)   
         self.listView.setObjectName("listView")
         self.verticalLayout.addWidget(self.listView)
+        file_list = ["/home/user/file1.txt", "/home/user/file2.txt", "/home/user/file3.txt", "/home/user/file4.txt", "/home/user/file5.txt", "/home/user/file6.txt", "/home/user/file7.txt", "/home/user/file8.txt", "/home/user/file9.txt", "/home/user/file10.txt"]
+        model = QtGui.QStandardItemModel()
+        for item in file_list:
+            model.appendRow(QtGui.QStandardItem(item))
+        self.listView.setModel(model)
+        
         self.horizontalLayout.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -101,6 +111,19 @@ class Ui_MainWindow(object):
         fileName, _ = QFileDialog.getOpenFileName(None, "Open File", "", "All Files (*);;Text Files (*.txt)", options=options)
         if fileName:
             print("Selected file:", fileName)
+            
+    def searchList(self, text):
+        # Dummy list for demonstration
+        file_list = ["/home/user/file1.txt", "/home/user/file2.txt", "/home/user/file3.txt", "/home/user/file4.txt", "/home/user/file5.txt", "/home/user/file6.txt", "/home/user/file7.txt", "/home/user/file8.txt", "/home/user/file9.txt", "/home/user/file10.txt"]
+        
+        # Filter the list based on the search text
+        filtered_list = [item for item in file_list if text.lower() in item.lower()]
+
+        # Update the list view
+        model = QtGui.QStandardItemModel()
+        for item in filtered_list:
+            model.appendRow(QtGui.QStandardItem(item))
+        self.listView.setModel(model)
             
             
 if __name__ == "__main__":
