@@ -505,7 +505,7 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
          </widget>
         </item>
         <item>
-         <widget class="QGraphicsView" name="graphicsView"/>
+         <widget class="QStackedWidget" name="stackedWidget"/>
         </item>
        </layout>
       </widget>
