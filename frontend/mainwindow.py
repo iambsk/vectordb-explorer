@@ -1,15 +1,28 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
-
+from typing import List
 
 import backend
+from backend.types import Document
 
-filedb = backend.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
+filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
+
+
+class DocumentStandardItemModel(QtGui.QStandardItemModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def setItemData(self, index, data):
+        item = self.itemFromIndex(index)
+        item.setData(data, QtCore.Qt.UserRole)
 
 class Ui_MainWindow(object):
+    def __init__(self):
+        self.documents: List[Document] = []
+        
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(1620, 1280)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -53,6 +66,9 @@ class Ui_MainWindow(object):
         
         self.listView = QtWidgets.QListView(self.widget2)   
         self.listView.setObjectName("listView")
+        self.listView.doubleClicked.connect(self.searchItemDoubleClicked)
+        self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers) # Removes the ability to double click and edit
+
         self.verticalLayout.addWidget(self.listView)
         model = QtGui.QStandardItemModel()
         self.listView.setModel(model)
@@ -102,25 +118,54 @@ class Ui_MainWindow(object):
         fileName, _ = QFileDialog.getOpenFileName(None, "Open File", "", "All Files (*);;Text Files (*.txt)", options=options)
         if fileName:
             print("Selected file:", fileName)
-            fildb.add_file(fileName)
+            filedb.add_file(fileName)
             
-    def searchList(self, text):
+    def searchList(self):
+        text = self.searchBar.text()
         # Dummy list for demonstration
-        file_list = filedb.vector_search(query_texts=[text],n_results=10)
+        self.documents = filedb.vector_search(query_texts=[text],n_results=10)
         
         # Filter the list based on the search text
-        filtered_list = [item.metadata['filename'] for item in file_list]
+        # searched_text = [item.text for item in self.documents]
 
         # Update the list view
-        model = QtGui.QStandardItemModel()
-        for item in filtered_list:
-            model.appendRow(QtGui.QStandardItem(item))
+        model = DocumentStandardItemModel()
+        for document in self.documents:
+            model_item = QtGui.QStandardItem(document.text)
+            model_item.setData(document, QtCore.Qt.UserRole)
+            model.appendRow(QtGui.QStandardItem(model_item))
         self.listView.setModel(model)
+    
+    def searchItemDoubleClicked(self, index):
+        item = self.listView.model().itemFromIndex(index)
+        document = item.data(QtCore.Qt.UserRole)
+        if document:
+            print("Item Double Clicked:", document)
             
             
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyleSheet("""
+        QListView {
+            background-color: white;
+            border: 1px solid #d3d3d3;
+            selection-background-color: #c3c3c3;
+            alternate-background-color: #f0f0f0;
+            padding: 2px;
+        }
+        QListView::item {
+            margin: 2px;
+            padding: 2px;
+            border-radius: 2px;
+        }
+        QListView::item:hover {
+            background-color: #f0f0f0;
+        }
+        QListView::item:selected {
+            background-color: #a0a0a0;
+        }
+    """)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
