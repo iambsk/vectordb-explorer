@@ -4,8 +4,10 @@
 import chromadb
 from backend.extractor import Extractor, Document
 from typing import List, Optional, Dict, Any
-import os
+import os, shutil
 import uuid
+
+
 
 class FileDB:
     def __init__(self, 
@@ -21,16 +23,28 @@ class FileDB:
         self.extractor = Extractor() #import extractor
         self.file_types = ["pdf","txt"] 
         # reload() ensure everything upto date on start
+        self.sync()
     
-    def reload(self):
-        # this will check every file and add the missing ones
-        # use tqdm to show iteration over all the files ?
+    @property
+    def files(self):
+        return [os.path.join(self.folder, file) for file in os.listdir(self.folder)]
+    
+    def sync(self):
+        """
+        Syncs the files in the watched folder with chromadb.
+        Uses the folder as the source of truth. Will delete any documents in chromadb that are not in the folder.
+        """
         for file in os.listdir(self.folder):
             if file.endswith(tuple(self.file_types)):
-                self.import_file(file)
-
-    def import_file(self,file):
-        documents: List[Documents] = self.extractor.extract_to_documents(file)
+                self.sync_file(os.path.join(self.folder, file))
+    
+        documents = self.collection.get()
+        for id,text,metadata in zip(documents['ids'],documents['documents'],documents['metadatas']):
+            filename = metadata['filename']
+            if filename not in [os.path.join(self.folder, file) for file in os.listdir(self.folder)]:
+                self.collection.delete(ids=[id])
+    def sync_file(self,file):
+        documents = self.extractor.extract_to_documents(file)
         # check if the document was already in chromadb
         potential_docs = self.collection.get(
             where={"filename": file}
@@ -39,22 +53,37 @@ class FileDB:
             return
         self.collection.add(documents=[doc.text for doc in documents],metadatas=[doc.metadata for doc in documents], ids=[str(uuid.uuid4()) for _ in documents])
     
-    def search(
+    def add_file(self,file):
+        """
+        Moves a file from the given location to the watched folder, then syncs the file to chromadb
+        """
+        # copy the file to the folder
+        shutil.copy(file, self.folder)
+        
+        self.sync_file(file)
+    
+    def vector_search(self,query_texts: Optional[List[str]] = None,n_results: int = 10,where: Optional[Dict[str, str]] = None,**kwargs: Any) -> List[dict]:
+        """Query the chroma collection."""
+        docs = self.collection.query(query_texts=query_texts,n_results=n_results,where=where,**kwargs)
+        return [Document(text=text,metadata=metadata) for text,metadata in zip(docs['documents'][0],docs['metadatas'][0])]
+    
+    
+    def _vector_search(
         self,
         query_texts: Optional[List[str]] = None,
         n_results: int = 10,
         where: Optional[Dict[str, str]] = None,
-        where_document: Optional[Dict[str, str]] = None,
         **kwargs: Any,
-    ) -> List[Document]:
+    ) -> List[dict]:
         """Query the chroma collection."""
         return self.collection.query(
             query_texts=query_texts,
             n_results=n_results,
             where=where,
-            where_document=where_document,
             **kwargs,
         )
+    
+    
 
     def delete(self,file):
         self.collection.delete(

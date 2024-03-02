@@ -1,12 +1,7 @@
 import textract
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from pydantic import BaseModel
+from backend.types import Document
 from typing import List
-
-class Document(BaseModel):
-    text: str
-    metadata: dict
-
 
 
 
@@ -20,12 +15,15 @@ class Extractor:
             chunk_overlap=chunk_overlap
         )
 
+    def extract_to_text(self, file: str) -> str:
+        return textract.process(file).decode('utf-8')
+    
     def extract_to_documents(self, file: str) -> List[Document]:
-        content: list[str] = textract.process(file).decode('utf-8')
+        content: str = textract.process(file).decode('utf-8')
         metadata: dict = {} #include filename
 
         # Use sectioner to organize content into sections
-        sections = self.splitter.create_documents(content)
+        sections = self.splitter.create_documents([content])
 
         # prepare metadata
         metadata = {
