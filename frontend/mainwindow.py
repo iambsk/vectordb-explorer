@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel
 from PyQt5 import uic
 import sys
 from typing import List
@@ -33,11 +33,19 @@ class UI(QMainWindow):
         self.listView.doubleClicked.connect(self.searchItemDoubleClicked)
         self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers) # Removes the ability to double click and edit
 
-  
-  
-  
-        self.splitter = self.findChild(QSplitter, "splitter")
+        # Adding file system tree view
+        self.model = QFileSystemModel()
+        self.model.setRootPath(QtCore.QDir.rootPath())  # Or any specific path you want to show
 
+        self.treeView.setModel(self.model)
+        self.treeView.setRootIndex(self.model.index(QtCore.QDir.rootPath()))  # Adjust if you're using a specific path      
+        # Optional: Customize the view
+        self.treeView.hideColumn(1)  # Example: Hide the size column
+        self.treeView.hideColumn(2)  # Hide the type column
+        self.treeView.hideColumn(3)  # Hide the date modified column
+        
+        
+        self.splitter = self.findChild(QSplitter, "splitter")       
         self.menubar = self.findChild(QMenuBar, "menubar")
         self.menuFile = self.findChild(QMenu, "menuFile")
         self.actionNew = self.findChild(QAction, "actionNew")
