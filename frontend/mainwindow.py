@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
+from PyQt5.QtCore import QUrl
 from PyQt5 import uic
 import sys
 from typing import List
@@ -45,7 +47,6 @@ class UI(QMainWindow):
         self.treeView.hideColumn(2)  # Hide the type column
         self.treeView.hideColumn(3)  # Hide the date modified column
         
-        
         self.splitter = self.findChild(QSplitter, "splitter")       
         self.menubar = self.findChild(QMenuBar, "menubar")
         self.menuFile = self.findChild(QMenu, "menuFile")
@@ -58,10 +59,6 @@ class UI(QMainWindow):
         self.searchBar.returnPressed.connect(self.searchList)
         self.actionNew.triggered.connect(self.openFileDialog)
 
-
-
-
-        
         # INIT LIST VIEW
         
         # self.listView = QtWidgets.QListView(self.widget2)   
@@ -102,7 +99,21 @@ class UI(QMainWindow):
             print("Selected file:", fileName)
             filedb.add_file(fileName)
             self.searchList()
+            self.viewFile(fileName)
             
+    def viewFile(self, fileName):
+		# fileView stuff
+        preview = QWebEngineView()
+        preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
+        #filePath = QFileDialog.getOpenFileName('pdfTest.pdf')
+        #url = QUrl.fromLocalFile(fileName)
+        url = QUrl.fromLocalFile("pdfTest.pdf")
+        print(url)
+        preview.setUrl(url)
+        self.graphicsView.addWidget(preview)
+		
+
     def searchList(self):
         text = self.searchBar.text()
         # Dummy list for demonstration
