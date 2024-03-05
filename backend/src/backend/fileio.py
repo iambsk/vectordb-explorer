@@ -40,6 +40,7 @@ class FileDB:
             filename = metadata['filename']
             if filename not in [os.path.join(self.folder, file) for file in os.listdir(self.folder)]:
                 self.collection.delete(ids=[id])
+    
     def sync_file(self,file):
         if not file.endswith(tuple(self.file_types)):
             raise ValueError(f"File type not supported: {file}")
@@ -64,9 +65,14 @@ class FileDB:
         
         self.sync_file(file)
     
-    def vector_search(self,query_texts: Optional[List[str]] = None,n_results: int = 10,where: Optional[Dict[str, str]] = None,**kwargs: Any) -> List[dict]:
+    def vector_search(self,
+                      query_texts: Optional[List[str]] = None,
+                      n_results: int = 10,
+                      where: Optional[Dict[str, str]] = None,
+                      **kwargs: Any
+    ) -> List[Document]:
         """Query the chroma collection."""
-        docs = self.collection.query(query_texts=query_texts,n_results=n_results,where=where,**kwargs)
+        docs = self._vector_search(query_texts=query_texts,n_results=n_results,where=where,**kwargs)
         return [Document(text=text,metadata=metadata) for text,metadata in zip(docs['documents'][0],docs['metadatas'][0])]
     
     
@@ -87,7 +93,9 @@ class FileDB:
     
     
 
-    def delete(self,file):
+    def delete_file(self,file):
+        shutil.rmtree(file)
+
         self.collection.delete(
             where={"filename": file}
         )
