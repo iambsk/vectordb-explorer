@@ -44,7 +44,11 @@ class FileDB:
             if filename not in [os.path.join(self.folder, file) for file in os.listdir(self.folder)]:
                 self.collection.delete(ids=[id])
     def sync_file(self,file):
+        if not file.endswith(tuple(self.file_types)):
+            raise ValueError(f"File type not supported: {file}")
         documents = self.extractor.extract_to_documents(file)
+        if not documents:
+            raise ValueError(f"Could not extract any documents from {file}")
         # check if the document was already in chromadb
         potential_docs = self.collection.get(
             where={"filename": file}
