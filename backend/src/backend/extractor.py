@@ -19,9 +19,13 @@ class Extractor:
         return textract.process(file).decode('utf-8')
     
     def extract_to_documents(self, file: str) -> List[Document]:
-        content: str = textract.process(file).decode('utf-8')
+        print(f"Extracting text from {file}")
+        try:
+            content: str = textract.process(file).decode('utf-8')
+        except Exception as e:
+            print(f"Error extracting text from {file}: {e}")
+            return []
         metadata: dict = {} #include filename
-
         # Use sectioner to organize content into sections
         sections = self.splitter.create_documents([content])
 
