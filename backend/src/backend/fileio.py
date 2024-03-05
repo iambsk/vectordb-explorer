@@ -93,7 +93,7 @@ class FileDB:
     
     
 
-    def delete_file(self,file):
+    def delete_file(self,file: str):
         shutil.rmtree(file)
 
         self.collection.delete(
