@@ -46,6 +46,7 @@ class FileDB:
         documents = self.extractor.extract_to_documents(file)
         if not documents:
             print("No documents extracted")
+            return
         # check if the document was already in chromadb
         potential_docs = self.collection.get(
             where={"filename": file}
