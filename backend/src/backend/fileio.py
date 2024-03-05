@@ -1,6 +1,3 @@
-# add file (will extract section add to db)
-# this manages the chromadb instance
-# have deletion too https://github.com/langchain-ai/langchain/discussions/9495
 import chromadb
 from backend.extractor import Extractor, Document
 from typing import List, Optional, Dict, Any
