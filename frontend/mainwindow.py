@@ -60,6 +60,9 @@ class UI(QMainWindow):
         self.searchBar.returnPressed.connect(self.searchList)
         self.actionNew.triggered.connect(self.openFileDialog)
 
+        #self.treeView.currentChanged().connect(self.fileView)
+        self.treeView.selectionModel().currentChanged.connect(self.viewFile)
+
         # INIT LIST VIEW
         
         # self.listView = QtWidgets.QListView(self.widget2)   
@@ -100,19 +103,25 @@ class UI(QMainWindow):
             print("Selected file:", fileName)
             filedb.add_file(fileName)
             self.searchList()
-            self.viewFile(fileName)
             
-    def viewFile(self, fileName):
-		# fileView stuff
+	# fileView stuff
+    def viewFile(self):
         preview = QWebEngineView()
-        preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
-        #filePath = QFileDialog.getOpenFileName('pdfTest.pdf')
-        #url = QUrl.fromLocalFile(fileName)
-        url = QUrl.fromLocalFile("pdfTest.pdf")
-        print(url)
-        preview.setUrl(url)
-        self.graphicsView.addWidget(preview)
+        try:
+            index = self.treeView.selectedIndexes()[0]
+            info = self.treeView.model().fileInfo(index)
+            filePath = info.absoluteFilePath()
+            fileExtension = os.path.splitest(filePath[0])[1]
+
+            if fileExtension in ['.pdf', '.txt', '.html']:
+                url = QUrl.fromLocalFile(filePath)
+                #url = QUrl.fromLocalFile(fileName)
+                #print(url)
+                preview.setUrl(url)
+                self.graphicsView.addWidget(preview)
+        except:
+            pass
 		
 
     def searchList(self):
