@@ -1,7 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QItemSelectionModel
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel
 from PyQt5 import uic
-import sys
+import os
 from typing import List
 
 import backend
@@ -35,13 +36,16 @@ class UI(QMainWindow):
         self.listView = self.findChild(QListView, "listView")
         self.listView.doubleClicked.connect(self.searchItemDoubleClicked)
         self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers) # Removes the ability to double click and edit
-
+        self.treeView.hideColumn(1)  # Example: Hide the size column
+        self.treeView.hideColumn(2)  # Hide the type column
+        self.treeView.hideColumn(3)  # Hide the date modified column
+        
         # Adding file system tree view
         self.model = QFileSystemModel()
         self.model.setRootPath(QtCore.QDir.rootPath())  # Or any specific path you want to show
 
         self.treeView.setModel(self.model)
-        self.treeView.setRootIndex(self.model.index(QtCore.QDir.rootPath()))  # Adjust if you're using a specific path      
+        self.treeView.setRootIndex(self.model.index(filedb.folder))  # Adjust if you're using a specific path      
         # Optional: Customize the view
         self.treeView.hideColumn(1)  # Example: Hide the size column
         self.treeView.hideColumn(2)  # Hide the type column
@@ -70,7 +74,39 @@ class UI(QMainWindow):
         
         self.actionNew.triggered.connect(self.openFileDialog)
         self.actionNew.triggered.connect(self.openFileDialog)
+        
+        self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self.openContextMenu)
 
+        folderIndex = self.model.index(filedb.folder)
+        self.treeView.expand(folderIndex)
+
+        self.treeView.scrollTo(folderIndex, QTreeView.EnsureVisible)
+    
+    def selectFilesInTreeView(self, filePaths):
+        selectionModel = self.treeView.selectionModel()
+
+        # Clear previous selection
+        selectionModel.clearSelection()
+
+        # Define the selection flag to select and highlight the row
+        selectionFlag = QItemSelectionModel.Select | QItemSelectionModel.Rows
+
+        for filePath in filePaths:
+            index = self.model.index(filePath)
+            if index.isValid():
+                # This selects the item. Adjust the selection behavior as needed.
+                selectionModel.select(index, QItemSelectionModel.Select | QItemSelectionModel.Rows)
+                # Ensure the selected item is visible
+                self.treeView.scrollTo(index)
+                
+    def openContextMenu(self, position):
+        contextMenu = QMenu(self)
+        deleteAction = contextMenu.addAction("Delete File")
+        action = contextMenu.exec_(self.treeView.viewport().mapToGlobal(position))
+        if action == deleteAction:
+            self.deleteSelectedFiles()
+            
     def refreshView(self):
         self.searchList()
     
@@ -122,7 +158,21 @@ class UI(QMainWindow):
         document = item.data(QtCore.Qt.UserRole)
         if document:
             print("Item Double Clicked:", document)
-
+    def deleteSelectedFiles(self):
+        indexes = self.treeView.selectedIndexes()
+        if indexes:
+            confirm = QtWidgets.QMessageBox.question(self, "Delete File",
+                                                     "Are you sure you want to delete the selected file(s)?",
+                                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if confirm == QtWidgets.QMessageBox.Yes:
+                for index in indexes:
+                    if self.model.isDir(index):
+                        continue  # Skip directories or implement directory deletion logic
+                    file_path = self.model.filePath(index)
+                    filedb.delete_file(file_path)
+                    # Optionally, refresh the QFileSystemModel or parent directory to reflect the deletion
+                    self.model.removeRow(index.row(), index.parent())
+                    self.refreshView()
 
     
     
