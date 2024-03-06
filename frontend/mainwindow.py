@@ -10,7 +10,8 @@ import backend
 from backend.types import Document
 from backend.client import FileDBClient
 
-filedb = FileDBClient()
+filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
+# filedb = FileDBClient()
 class DocumentStandardItemModel(QtGui.QStandardItemModel):
     def __init__(self, parent=None):
         super().__init__(parent)
