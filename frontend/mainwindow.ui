@@ -568,7 +568,7 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
    </property>
    <property name="menuRole">
     <enum>QAction::QuitRole</enum>
-   </property
+   </property>
   </action>
   <action name="actionExit">
    <property name="text">
