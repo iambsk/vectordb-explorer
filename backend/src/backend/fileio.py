@@ -73,7 +73,7 @@ class FileDB:
     ) -> List[Document]:
         """Query the chroma collection."""
         docs = self._vector_search(query_texts=query_texts,n_results=n_results,where=where,**kwargs)
-        return [Document(text=text,metadata=metadata) for text,metadata in zip(docs['documents'][0],docs['metadatas'][0])]
+        return [Document(text=text,metadata=metadata, path=metadata['filename']) for text,metadata in zip(docs['documents'][0],docs['metadatas'][0])]
     
     
     def _vector_search(

@@ -35,5 +35,5 @@ class Extractor:
         }
 
         # Create LangChain documents from sections
-        return [Document(text=section.page_content,metadata=metadata) for section in sections]
+        return [Document(text=section.page_content,metadata=metadata, path=file) for section in sections]
 

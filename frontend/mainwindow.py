@@ -148,11 +148,17 @@ class UI(QMainWindow):
             model.appendRow(QtGui.QStandardItem(model_item))
         self.listView.setModel(model)
 
+        self.selectFilesInTreeView([doc.path for doc in self.documents])
+
+
     def selectFilesInTreeView(self, filePaths):
         selectionModel = self.treeView.selectionModel()
 
         # Clear previous selection
         selectionModel.clearSelection()
+
+        # Define the selection flag to select and highlight the row
+        selectionFlag = QItemSelectionModel.Select | QItemSelectionModel.Rows
 
         for filePath in filePaths:
             index = self.model.index(filePath)
