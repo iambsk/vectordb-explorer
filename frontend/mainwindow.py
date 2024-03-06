@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from PyQt5.QtCore import QUrl
 from PyQt5 import uic
-import sys
+import pathlib
 from typing import List
 
 import backend
@@ -106,23 +106,20 @@ class UI(QMainWindow):
             
 	# fileView stuff
     def viewFile(self):
+        cWidget = self.graphicsView.currentWidget()
+        self.graphicsView.removeWidget(cWidget)
         preview = QWebEngineView()
+        preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
-        try:
-            index = self.treeView.selectedIndexes()[0]
-            info = self.treeView.model().fileInfo(index)
-            filePath = info.absoluteFilePath()
-            fileExtension = os.path.splitest(filePath[0])[1]
-
-            if fileExtension in ['.pdf', '.txt', '.html']:
-                url = QUrl.fromLocalFile(filePath)
-                #url = QUrl.fromLocalFile(fileName)
-                #print(url)
-                preview.setUrl(url)
-                self.graphicsView.addWidget(preview)
-        except:
-            pass
-		
+        index = self.treeView.currentIndex()
+        info = self.treeView.model().fileInfo(index)
+        filePath = info.absoluteFilePath()
+        fileExtension = pathlib.Path(filePath).suffix
+        if fileExtension in ['.pdf', '.txt', '.html']:
+            url = QUrl.fromLocalFile(filePath)
+            print(url)
+            preview.setUrl(url)
+            self.graphicsView.addWidget(preview)
 
     def searchList(self):
         text = self.searchBar.text()
