@@ -103,7 +103,7 @@ class UI(QMainWindow):
             print("Selected file:", fileName)
             filedb.add_file(fileName)
             self.searchList()
-            
+           
     def searchList(self):
         text = self.searchBar.text()
         # Dummy list for demonstration
@@ -115,7 +115,7 @@ class UI(QMainWindow):
         # Update the list view
         model = DocumentStandardItemModel()
         for document in self.documents:
-            model_item = QtGui.QStandardItem(document.text)
+            model_item = QtGui.QStandardItem(f"{document.text} ({document.metadata.get('filename')})")
             model_item.setData(document, QtCore.Qt.UserRole)
             model.appendRow(QtGui.QStandardItem(model_item))
         self.listView.setModel(model)
