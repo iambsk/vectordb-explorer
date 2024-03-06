@@ -152,6 +152,7 @@ class UI(QMainWindow):
             model_item.setData(document, QtCore.Qt.UserRole)
             model.appendRow(QtGui.QStandardItem(model_item))
         self.listView.setModel(model)
+        self.selectFilesInTreeView([doc.metadata['filename'] for doc in self.documents])
     
     def searchItemDoubleClicked(self, index):
         item = self.listView.model().itemFromIndex(index)
