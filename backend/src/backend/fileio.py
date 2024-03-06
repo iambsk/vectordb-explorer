@@ -14,6 +14,7 @@ class FileDB:
                  ) -> None:
         # the folder that should be watched
         self.folder: str = folder
+        self.chroma_dir = chroma_dir
         # the persistent chromadb location, this is going to be an sqlite file
         self.chroma_client = chromadb.PersistentClient(path=chroma_dir) # this should be the langchain.chroma instance and should take in chroma_dir
         self.collection = self.chroma_client.get_or_create_collection(name=collection_name) 
@@ -26,6 +27,16 @@ class FileDB:
     def files(self):
         return [os.path.join(self.folder, file) for file in os.listdir(self.folder)]
     
+    def update_folder(self,folder):
+        self.folder = folder
+        self.sync()
+    
+    def update_chroma_dir(self,chroma_dir):
+        self.chroma_dir = chroma_dir
+        self.chroma_client = chromadb.PersistentClient(path=chroma_dir)
+        self.collection = self.chroma_client.get_or_create_collection(name=self.collection.name)
+        self.sync()
+        
     def sync(self):
         """
         Syncs the files in the watched folder with chromadb.

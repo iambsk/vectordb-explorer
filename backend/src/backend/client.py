@@ -3,6 +3,25 @@ import requests
 class FileDBClient:
     def __init__(self, base_url="http://127.0.0.1:8000"):
         self.base_url = base_url
+    
+    @property
+    def folder(self):
+        response = requests.get(f"{self.base_url}/folder/")
+        return response.json()
+    
+    @property
+    def chroma_dir(self):
+        response = requests.get(f"{self.base_url}/chroma-dir/")
+        return response.json()
+    
+    def change_folder(self, folder: str):
+        response = requests.post(f"{self.base_url}/change-folder/", json={"folder": folder})
+        return response.json()
+    
+    def change_chroma_dir(self, chroma_dir: str):
+        response = requests.post(f"{self.base_url}/change-chroma-dir/", json={"chroma_dir": chroma_dir})
+        return response.json()
+    
 
     def sync_files(self):
         response = requests.post(f"{self.base_url}/sync/")

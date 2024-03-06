@@ -555,7 +555,7 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
      <string>Preferences</string>
     </property>
     <addaction name="actionChange_Directory"/>
-   <addaction name="actionPersist_Chroma"/>
+   <addaction name="actionChroma_Dir"/>
   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -580,9 +580,9 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
       <string>Change Directory</string>
      </property>
     </action>
-    <action name="actionPersist_Chroma">
+    <action name="actionChroma_Dir">
      <property name="text">
-      <string>Persist Chroma</string>
+      <string>Change ChromaDB Dir</string>
      </property>
     </action>
  </widget>

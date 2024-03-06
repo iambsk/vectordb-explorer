@@ -7,6 +7,7 @@ from typing import List
 import backend
 from backend.types import Document
 from backend.client import FileDBClient
+from pathlib import Path
 
 filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
 # filedb = FileDBClient()
@@ -50,52 +51,29 @@ class UI(QMainWindow):
         self.splitter = self.findChild(QSplitter, "splitter")       
         self.menubar = self.findChild(QMenuBar, "menubar")
         self.menuFile = self.findChild(QMenu, "menuFile")
+        self.menuPreferences = self.findChild(QMenu, "menuPreferences")
         self.actionNew = self.findChild(QAction, "actionNew")
         self.menuView = self.findChild(QMenu, "menuView")
+        
+        self.actionChange_Directory = self.findChild(QAction, "actionChange_Directory")
+        self.actionChroma_Dir = self.findChild(QAction, "actionChroma_Dir")
+        
+        self.actionChange_Directory.triggered.connect(self.changeDirectory)
+        self.actionChroma_Dir.triggered.connect(self.changeChromaDirectory)
 
         # connect
         self.splitter.setSizes([50, 100, 50])
         self.searchBar.setPlaceholderText("Search")
         self.searchBar.returnPressed.connect(self.searchList)
         self.actionNew.triggered.connect(self.openFileDialog)
-
-
-
-
         
-        # INIT LIST VIEW
         
-        # self.listView = QtWidgets.QListView(self.widget2)   
-        # self.listView.setObjectName("listView")
-        # self.listView.doubleClicked.connect(self.searchItemDoubleClicked)
-        # self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers) # Removes the ability to double click and edit
+        self.actionNew.triggered.connect(self.openFileDialog)
+        self.actionNew.triggered.connect(self.openFileDialog)
 
-        # self.verticalLayout.addWidget(self.listView)
-        # model = QtGui.QStandardItemModel()
-        # self.listView.setModel(model)
-        
-        # self.horizontalLayout.addWidget(self.splitter)
-        # MainWindow.setCentralWidget(self.centralwidget)
-        # self.menubar = QtWidgets.QMenuBar(MainWindow)
-        # self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
-        # self.menubar.setObjectName("menubar")
-        # self.menuFile = QtWidgets.QMenu(self.menubar)
-        # self.menuFile.setObjectName("menuFile")
-        # self.menuView = QtWidgets.QMenu(self.menubar)
-        # self.menuView.setObjectName("menuView")
-        # MainWindow.setMenuBar(self.menubar)
-        # self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        # self.statusbar.setObjectName("statusbar")
-        # MainWindow.setStatusBar(self.statusbar)
-        # self.actionNew = QtWidgets.QAction(MainWindow)
-        # self.actionNew.setObjectName("actionNew")
-        # self.actionNew.triggered.connect(self.openFileDialog)
-        # self.actionExit = QtWidgets.QAction(MainWindow)
-        # self.actionExit.setObjectName("actionExit")
-        # self.menuFile.addAction(self.actionNew)
-        # self.menubar.addAction(self.menuFile.menuAction())
-        # self.menubar.addAction(self.menuView.menuAction())
-
+    def refreshView(self):
+        self.searchList()
+    
     def openFileDialog(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(None, "Open File", "", "All Files (*);;Text Files (*.txt)", options=options)
@@ -103,7 +81,26 @@ class UI(QMainWindow):
             print("Selected file:", fileName)
             filedb.add_file(fileName)
             self.searchList()
-           
+    
+    def changeDirectory(self):
+        # Open dialog to select a directory for the main file database
+        path = Path(filedb.folder)
+        folder = QFileDialog.getExistingDirectory(self, "Select Directory", str(path.parent.absolute()))
+        if folder:
+            print("Selected directory:", folder)
+            # Update the vectordb folder
+            filedb.update_folder(folder)
+            self.refreshView() 
+    def changeChromaDirectory(self):
+        # Open dialog to select a directory for the chroma files
+        path = Path(filedb.chroma_dir)
+        chroma_dir = QFileDialog.getExistingDirectory(self, "Select Chroma Directory", str(path.parent.absolute()))
+        if chroma_dir:
+            print("Selected chroma directory:", chroma_dir)
+            # Update the chroma directory location
+            filedb.update_chroma_dir(chroma_dir)
+            self.refreshView() 
+            
     def searchList(self):
         text = self.searchBar.text()
         # Dummy list for demonstration

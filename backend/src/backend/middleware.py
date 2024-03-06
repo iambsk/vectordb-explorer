@@ -14,6 +14,34 @@ class VectorSearchQuery(BaseModel):
     n_results: int = 10
     where: Optional[dict] = None
 
+@app.get("/folder/")
+def get_folder():
+    return {"folder": file_db.folder}
+
+@app.get("/chroma-dir/")
+def get_chroma_dir():
+    return {"chroma_dir": file_db.chroma_dir}
+
+@app.get("/files/")
+def get_files():
+    return file_db.files
+
+@app.post("/change-folder/")
+def change_folder(folder: str = Query(..., description="Path of the new folder")):
+    try:
+        file_db.update_folder(folder)
+        return {"message": f"Folder changed to {folder}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/change-chroma-dir/")
+def change_chroma_dir(chroma_dir: str = Query(..., description="Path of the new chroma directory")):
+    try:
+        file_db.update_chroma_dir(chroma_dir)
+        return {"message": f"Chroma directory changed to {chroma_dir}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/sync/")
 def sync_files():
     try:
