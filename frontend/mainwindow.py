@@ -1,7 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QItemSelectionModel
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel
 from PyQt5 import uic
-import sys
+import os
 from typing import List
 
 import backend.src.backend as backend
@@ -59,8 +60,8 @@ class UI(QMainWindow):
         self.searchBar.returnPressed.connect(self.searchList)
         self.actionNew.triggered.connect(self.openFileDialog)
 
-
-
+        self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self.openContextMenu)
 
         
         # INIT LIST VIEW
@@ -96,6 +97,29 @@ class UI(QMainWindow):
         # self.menubar.addAction(self.menuFile.menuAction())
         # self.menubar.addAction(self.menuView.menuAction())
 
+
+    def deleteSelectedFiles(self):
+        indexes = self.treeView.selectedIndexes()
+        if indexes:
+            confirm = QtWidgets.QMessageBox.question(self, "Delete File",
+                                                     "Are you sure you want to delete the selected file(s)?",
+                                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if confirm == QtWidgets.QMessageBox.Yes:
+                for index in indexes:
+                    if self.model.isDir(index):
+                        continue  # Skip directories or implement directory deletion logic
+                    file_path = self.model.filePath(index)
+                    os.remove(file_path)
+                    # Optionally, refresh the QFileSystemModel or parent directory to reflect the deletion
+                    self.model.removeRow(index.row(), index.parent())
+
+    def openContextMenu(self, position):
+        contextMenu = QMenu(self)
+        deleteAction = contextMenu.addAction("Delete File")
+        action = contextMenu.exec_(self.treeView.viewport().mapToGlobal(position))
+        if action == deleteAction:
+            self.deleteSelectedFiles()
+
     def openFileDialog(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(None, "Open File", "", "All Files (*);;Text Files (*.txt)", options=options)
@@ -119,6 +143,20 @@ class UI(QMainWindow):
             model_item.setData(document, QtCore.Qt.UserRole)
             model.appendRow(QtGui.QStandardItem(model_item))
         self.listView.setModel(model)
+
+    def selectFilesInTreeView(self, filePaths):
+        selectionModel = self.treeView.selectionModel()
+
+        # Clear previous selection
+        selectionModel.clearSelection()
+
+        for filePath in filePaths:
+            index = self.model.index(filePath)
+            if index.isValid():
+                # This selects the item. Adjust the selection behavior as needed.
+                selectionModel.select(index, QItemSelectionModel.Select | QItemSelectionModel.Rows)
+                # Ensure the selected item is visible
+                self.treeView.scrollTo(index)
     
     def searchItemDoubleClicked(self, index):
         item = self.listView.model().itemFromIndex(index)

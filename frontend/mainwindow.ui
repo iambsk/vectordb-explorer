@@ -503,7 +503,7 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
            <enum>Qt::PreventContextMenu</enum>
           </property>
           <property name="text">
-           <string>Veiw</string>
+           <string>View</string>
           </property>
          </widget>
         </item>
