@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from typing import List, Optional
 from pydantic import BaseModel
-from file_db import FileDB  # Assuming your class is saved in file_db.py
+from fileio import FileDB  # Assuming your class is saved in file_db.py
 import uvicorn
-from backend.tyeps import Document
+from backend.src.backend.types import Document
 
 app = FastAPI()
 

@@ -1,5 +1,5 @@
 import chromadb
-from backend.extractor import Extractor, Document
+from backend.src.backend.extractor import Extractor, Document
 from typing import List, Optional, Dict, Any
 import os, shutil
 import uuid

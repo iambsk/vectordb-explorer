@@ -4,9 +4,9 @@ from PyQt5 import uic
 import sys
 from typing import List
 
-import backend
-from backend.types import Document
-from backend.client import FileDBClient
+import backend.src.backend as backend
+from backend.src.backend.types import Document
+from backend.src.backend.client import FileDBClient
 
 filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
 # filedb = FileDBClient()

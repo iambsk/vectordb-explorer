@@ -1,6 +1,6 @@
 import textract
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from backend.types import Document
+from backend.src.backend.types import Document
 from typing import List
 
 
