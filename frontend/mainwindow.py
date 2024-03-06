@@ -63,7 +63,11 @@ class UI(QMainWindow):
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
 
-        
+        folderIndex = self.model.index(filedb.folder)
+        self.treeView.expand(folderIndex)
+
+        self.treeView.scrollTo(folderIndex, QTreeView.EnsureVisible)
+
         # INIT LIST VIEW
         
         # self.listView = QtWidgets.QListView(self.widget2)   
