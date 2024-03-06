@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>853</width>
+    <width>820</width>
     <height>640</height>
    </rect>
   </property>
@@ -499,6 +499,9 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="viewLabel">
+          <property name="contextMenuPolicy">
+           <enum>Qt::PreventContextMenu</enum>
+          </property>
           <property name="text">
            <string>Veiw</string>
           </property>
@@ -532,8 +535,8 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>853</width>
-     <height>22</height>
+     <width>820</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -547,20 +550,41 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
      <string>View</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuPreferences">
+    <property name="title">
+     <string>Preferences</string>
+    </property>
+    <addaction name="actionChange_Directory"/>
+   <addaction name="actionPersist_Chroma"/>
+  </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuPreferences"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
    <property name="text">
     <string>New</string>
    </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
+   </property
   </action>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
    </property>
   </action>
+  <action name="actionChange_Directory">
+     <property name="text">
+      <string>Change Directory</string>
+     </property>
+    </action>
+    <action name="actionPersist_Chroma">
+     <property name="text">
+      <string>Persist Chroma</string>
+     </property>
+    </action>
  </widget>
  <resources/>
  <connections/>
