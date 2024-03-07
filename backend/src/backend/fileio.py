@@ -3,7 +3,7 @@ from backend.extractor import Extractor, Document
 from typing import List, Optional, Dict, Any
 import os, shutil
 import uuid
-
+from pathlib import Path
 
 
 class FileDB:
@@ -13,8 +13,9 @@ class FileDB:
                  collection_name: str = "default",
                  ) -> None:
         # the folder that should be watched
-        self.folder: str = folder
-        self.chroma_dir = chroma_dir
+        self.folder: str = str(Path(folder).resolve().absolute())
+        self.chroma_dir = str(Path(chroma_dir).resolve().absolute())
+        print(f"Watching folder: {self.folder}")
         # the persistent chromadb location, this is going to be an sqlite file
         self.chroma_client = chromadb.PersistentClient(path=chroma_dir) # this should be the langchain.chroma instance and should take in chroma_dir
         self.collection = self.chroma_client.get_or_create_collection(name=collection_name) 
@@ -52,19 +53,21 @@ class FileDB:
             if filename not in [os.path.join(self.folder, file) for file in os.listdir(self.folder)]:
                 self.collection.delete(ids=[id])
     
-    def sync_file(self,file):
-        if not file.endswith(tuple(self.file_types)):
-            raise ValueError(f"File type not supported: {file}")
-        documents = self.extractor.extract_to_documents(file)
-        if not documents:
-            print("No documents extracted")
-            return
+    def sync_file(self,filepath):
+        path = str(Path(filepath).resolve().absolute())
+        if not path.endswith(tuple(self.file_types)):
+            raise ValueError(f"File type not supported: {path}")
         # check if the document was already in chromadb
         potential_docs = self.collection.get(
-            where={"filename": file}
+            where={"filename": path}
         )
         if potential_docs['ids']:
             return
+        documents = self.extractor.extract_to_documents(path)
+        if not documents:
+            print("No documents extracted")
+            return
+        
         self.collection.add(documents=[doc.text for doc in documents],metadatas=[doc.metadata for doc in documents], ids=[str(uuid.uuid4()) for _ in documents])
     
     def add_file(self,file):
@@ -72,9 +75,10 @@ class FileDB:
         Moves a file from the given location to the watched folder, then syncs the file to chromadb
         """
         # copy the file to the folder
-        shutil.copy(file, self.folder)
+        new_path = shutil.copy(file, self.folder)
         
-        self.sync_file(file)
+        self.sync_file(new_path)
+        # self.sync()
     
     def vector_search(self,
                       query_texts: Optional[List[str]] = None,
@@ -105,10 +109,11 @@ class FileDB:
     
 
     def delete_file(self,file: str):
-        os.remove(file)
-
+        path = str(Path(file).absolute())
+        os.remove(path)
+        print(path)
         self.collection.delete(
-            where={"filename": file}
+            where={"filename": path}
         )
 
     

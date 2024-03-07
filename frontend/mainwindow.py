@@ -189,7 +189,7 @@ class UI(QMainWindow):
                     filedb.delete_file(file_path)
                     # Optionally, refresh the QFileSystemModel or parent directory to reflect the deletion
                     self.model.removeRow(index.row(), index.parent())
-                    self.refreshView()
+        self.refreshView()
 
     
     
