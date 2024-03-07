@@ -1,8 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QItemSelectionModel
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel
+from PyQt5.QtCore import QItemSelectionModel
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
+from PyQt5.QtCore import QUrl
 from PyQt5 import uic
-import os
+import pathlib
 from typing import List
 
 import backend
@@ -77,12 +79,29 @@ class UI(QMainWindow):
         
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
+        self.treeView.selectionModel().currentChanged.connect(self.viewFile)
 
         folderIndex = self.model.index(filedb.folder)
         self.treeView.expand(folderIndex)
 
         self.treeView.scrollTo(folderIndex, QTreeView.EnsureVisible)
     
+    def viewFile(self):
+        cWidget = self.graphicsView.currentWidget()
+        self.graphicsView.removeWidget(cWidget)
+        preview = QWebEngineView()
+        preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
+        index = self.treeView.currentIndex()
+        info = self.treeView.model().fileInfo(index)
+        filePath = info.absoluteFilePath()
+        fileExtension = pathlib.Path(filePath).suffix
+        if fileExtension in ['.pdf', '.txt', '.html']:
+            url = QUrl.fromLocalFile(filePath)
+            print(url)
+            preview.setUrl(url)
+            self.graphicsView.addWidget(preview)
+            
     def selectFilesInTreeView(self, filePaths):
         selectionModel = self.treeView.selectionModel()
 
@@ -148,7 +167,7 @@ class UI(QMainWindow):
         # Update the list view
         model = DocumentStandardItemModel()
         for document in self.documents:
-            model_item = QtGui.QStandardItem(f"{document.text} ({document.metadata.get('filename')})")
+            model_item = QtGui.QStandardItem(f"{document.text} \n({document.metadata.get('filename')})")
             model_item.setData(document, QtCore.Qt.UserRole)
             model.appendRow(QtGui.QStandardItem(model_item))
         self.listView.setModel(model)
