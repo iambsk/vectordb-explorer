@@ -105,7 +105,7 @@ class FileDB:
     
 
     def delete_file(self,file: str):
-        shutil.rmtree(file)
+        os.remove(file)
 
         self.collection.delete(
             where={"filename": file}

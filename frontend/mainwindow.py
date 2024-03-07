@@ -74,9 +74,6 @@ class UI(QMainWindow):
         self.actionNew.triggered.connect(self.openFileDialog)
         
         
-        self.actionNew.triggered.connect(self.openFileDialog)
-        self.actionNew.triggered.connect(self.openFileDialog)
-        
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.openContextMenu)
         self.treeView.selectionModel().currentChanged.connect(self.viewFile)
