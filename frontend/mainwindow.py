@@ -1,11 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QStackedWidget, QTreeView, QListView, QFileDialog, QMenuBar, QMenu, QAction, QSplitter, QFileSystemModel, QLabel, QVBoxLayout, QWidget
 from PyQt5.QtCore import QItemSelectionModel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QMimeData, Qt
 from PyQt5 import uic
 import pathlib
 from typing import List
+import qdarkgraystyle
 
 import backend
 from backend.types import Document
@@ -27,7 +28,16 @@ class DocumentStandardItemModel(QtGui.QStandardItemModel):
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
+
         self.documents: List[Document] = []
+
+        #Drag and Drop support
+        self.setAcceptDrops(True)
+        
+        # self.label = QLabel("Drag and Drop Files Here")
+        # self.layout.addWidget(self.label)
+        # self.setlayout(self.layout)
+
         # load the ui file
         uic.loadUi("mainwindow.ui", self)
 
@@ -36,6 +46,7 @@ class UI(QMainWindow):
         self.graphicsView = self.findChild(QStackedWidget, "stackedWidget")
         self.treeView = self.findChild(QTreeView, "treeView")
         self.listView = self.findChild(QListView, "listView")
+        self.setStyleSheet("selection-background-color: transparent")
         self.listView.doubleClicked.connect(self.searchItemDoubleClicked)
         self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers) # Removes the ability to double click and edit
         self.treeView.hideColumn(1)  # Example: Hide the size column
@@ -51,7 +62,7 @@ class UI(QMainWindow):
         # Optional: Customize the view
         self.treeView.hideColumn(1)  # Example: Hide the size column
         self.treeView.hideColumn(2)  # Hide the type column
-        self.treeView.hideColumn(3)  # Hide the date modified column
+        self.treeView.hideColumn(3)  #          Hide the date modified column
         
         
         self.splitter = self.findChild(QSplitter, "splitter")       
@@ -224,7 +235,31 @@ class UI(QMainWindow):
                     filedb.delete_file(file_path)
                     # Optionally, refresh the QFileSystemModel or parent directory to reflect the deletion
                     self.model.removeRow(index.row(), index.parent())
-        self.refreshView()
+                    self.refreshView()
+    
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            for url in urls:
+                filepath = url.toLocalFile()
+                if pathlib.Path(filepath).is_file():
+                    event.accept()
+                    return
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            for url in urls:
+                filepath = url.toLocalFile()
+                if pathlib.Path(filepath).is_file():
+                    print("Dropped file:", filepath)
+                    filedb.add_file(filepath)
+                    self.searchList()
+        else:
+            event.ignore()
+        
 
     
     
@@ -254,8 +289,10 @@ if __name__ == "__main__":
     #         background-color: #a0a0a0;
     #     }
     # """)
+    app.setStyleSheet(qdarkgraystyle.load_stylesheet())
     MainWindow = QtWidgets.QMainWindow()
     ui = UI()
+    
     # ui.setupUi(MainWindow)
     # MainWindow.show()
     ui.show()
