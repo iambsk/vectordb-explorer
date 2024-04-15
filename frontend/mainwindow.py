@@ -90,6 +90,7 @@ class UI(QMainWindow):
             url = QUrl.fromLocalFile(filePath)
             children = self.graphicsView.children()
             #print(children)
+			# Finds the pre-existing fileView else makes a new one
             found = False
             for view in children:
                 if isinstance(view, QWebEngineView) and view.url() == url:
@@ -105,23 +106,24 @@ class UI(QMainWindow):
                 self.graphicsView.setCurrentWidget(preview)
             
     def viewFile(self):
-        preview = QWebEngineView()
-        preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
-        preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
+		# gets the filepath from the treeView
         index = self.treeView.currentIndex()
         info = self.treeView.model().fileInfo(index)
         filePath = info.absoluteFilePath()
+		# adds the file to the graphics stack
         self.pushFileStack(filePath)
 
     def searchFile(self, index):
+		# gets the filepath from the search list
         item = self.listView.model().itemFromIndex(index)
         document = item.data(QtCore.Qt.UserRole)
         filePath = document.metadata.get("filename")
+		# adds the file to the graphics stack
         self.pushFileStack(filePath)
 
         preview = self.graphicsView.currentWidget()
         if document:
-            print("Item Double Clicked:\n", document.text)
+            #print("Item Double Clicked:\n", document.text)
             preview.findText(document.text)
 
     def selectFilesInTreeView(self, filePaths):
