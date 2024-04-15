@@ -123,9 +123,14 @@ class UI(QMainWindow):
 
         preview = self.graphicsView.currentWidget()
         if document:
-            cleanText = document.text.replace("\n", " ")
-            cleanText = ' '.join(cleanText.split())
-            preview.findText(cleanText)
+            fileExtension = pathlib.Path(filePath).suffix
+            if fileExtension in ['.pdf']:
+            	cleanText = document.text.replace("\n", " ")
+            	cleanText = ' '.join(cleanText.split())
+            	preview.findText(cleanText)
+            else:
+                cleanText = document.text
+                preview.findText(cleanText)
             #print("clean text\n\n", cleanText)
 
 
