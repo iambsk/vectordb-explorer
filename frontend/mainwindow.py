@@ -71,6 +71,7 @@ class UI(QMainWindow):
         self.splitter.setSizes([50, 100, 50])
         self.searchBar.setPlaceholderText("Search")
         self.searchBar.returnPressed.connect(self.searchList)
+        self.listView.doubleClicked.connect(self.searchFile)
         self.actionNew.triggered.connect(self.openFileDialog)
         
         
@@ -83,22 +84,46 @@ class UI(QMainWindow):
 
         self.treeView.scrollTo(folderIndex, QTreeView.EnsureVisible)
     
+    def pushFileStack(self, filePath):
+        fileExtension = pathlib.Path(filePath).suffix
+        if fileExtension in ['.pdf', '.txt', '.html']:
+            url = QUrl.fromLocalFile(filePath)
+            children = self.graphicsView.children()
+            #print(children)
+            found = False
+            for view in children:
+                if isinstance(view, QWebEngineView) and view.url() == url:
+                    found = True
+                    self.graphicsView.setCurrentWidget(view)
+                    break
+            if found == False:
+                preview = QWebEngineView()
+                preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+                preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
+                preview.setUrl(url)
+                self.graphicsView.addWidget(preview)
+                self.graphicsView.setCurrentWidget(preview)
+            
     def viewFile(self):
-        cWidget = self.graphicsView.currentWidget()
-        self.graphicsView.removeWidget(cWidget)
         preview = QWebEngineView()
         preview.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         preview.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
         index = self.treeView.currentIndex()
         info = self.treeView.model().fileInfo(index)
         filePath = info.absoluteFilePath()
-        fileExtension = pathlib.Path(filePath).suffix
-        if fileExtension in ['.pdf', '.txt', '.html']:
-            url = QUrl.fromLocalFile(filePath)
-            print(url)
-            preview.setUrl(url)
-            self.graphicsView.addWidget(preview)
-            
+        self.pushFileStack(filePath)
+
+    def searchFile(self, index):
+        item = self.listView.model().itemFromIndex(index)
+        document = item.data(QtCore.Qt.UserRole)
+        filePath = document.metadata.get("filename")
+        self.pushFileStack(filePath)
+
+        preview = self.graphicsView.currentWidget()
+        if document:
+            print("Item Double Clicked:\n", document.text)
+            preview.findText(document.text)
+
     def selectFilesInTreeView(self, filePaths):
         selectionModel = self.treeView.selectionModel()
 
