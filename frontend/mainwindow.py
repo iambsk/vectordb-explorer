@@ -124,7 +124,8 @@ class UI(QMainWindow):
         preview = self.graphicsView.currentWidget()
         if document:
             #print("Item Double Clicked:\n", document.text)
-            preview.findText(document.text)
+            cleanText = document.text.replace("\n", " ")
+            preview.findText(cleanText)
 
     def selectFilesInTreeView(self, filePaths):
         selectionModel = self.treeView.selectionModel()
