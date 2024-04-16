@@ -2,7 +2,6 @@ from backend.userdb import UserDBs
 
 SECRET_KEY = "This is a secret key"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 from datetime import datetime, timedelta
 import jwt
 import hashlib
@@ -46,4 +45,4 @@ class AuthStore:
 
         temp_username = str(uuid.uuid4())
         self.temp_users.add(temp_username)
-        return self.user_dbs.get_user_db(temp_username)
+        return temp_username

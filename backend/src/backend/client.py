@@ -50,7 +50,7 @@ class FileDBClient:
 
 
 class AuthFileDBClient(FileDBClient):
-    def __init__(self, username, password, base_url="http://127.0.0.1:8000"):
+    def __init__(self, username: str = None, password: str = "", base_url="http://127.0.0.1:8000"):
         super().__init__(base_url)
         self.username = username
         self.password = password
@@ -58,9 +58,12 @@ class AuthFileDBClient(FileDBClient):
 
     def get_token(self):
         """Authenticate with the server and retrieve the access token."""
+        if not self.username:
+            temp = True
+        slug_suffix = "_temp" if temp else ""
         response = requests.post(
-            f"{self.base_url}/token",
-            data={"username": self.username, "password": self.password},
+            f"{self.base_url}/token{slug_suffix}",
+            data={"username": self.username, "password": self.password} if not temp else {},
         )
         if response.status_code == 200:
             return response.json()["access_token"]

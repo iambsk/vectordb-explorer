@@ -16,7 +16,7 @@ auth_store = AuthStore(UserDBs(folder_prefix="./tmp/data"))
 
 SECRET_KEY = "This is a secret key"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -48,6 +48,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     else:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
+
+@app.post("/token_temp")
+def login_temp():
+    username = auth_store.create_temp_user()
+    access_token = auth_store.create_access_token(
+        data={"sub": username},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 class VectorSearchQuery(BaseModel):
     query_texts: Optional[List[str]] = None
