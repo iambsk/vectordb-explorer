@@ -50,8 +50,9 @@ class FileDBClient:
 
 
 class AuthFileDBClient(FileDBClient):
-    def __init__(self, username: str = None, password: str = "", base_url="http://127.0.0.1:8000"):
+    def __init__(self, username: str = "", password: str = "", base_url="http://127.0.0.1:8000"):
         super().__init__(base_url)
+        
         self.username = username
         self.password = password
         self.token = self.get_token()
@@ -59,17 +60,35 @@ class AuthFileDBClient(FileDBClient):
     def get_token(self):
         """Authenticate with the server and retrieve the access token."""
         if not self.username:
-            temp = True
-        slug_suffix = "_temp" if temp else ""
+            response = requests.post(f"{self.base_url}/create-temp-user")
+            res_data = response.json()
+            self.username = res_data["username"]
+            self.password = res_data["password"]
+            return res_data["access_token"]
         response = requests.post(
-            f"{self.base_url}/token{slug_suffix}",
-            data={"username": self.username, "password": self.password} if not temp else {},
+            f"{self.base_url}/token",
+            data={"username": self.username, "password": self.password},
         )
         if response.status_code == 200:
             return response.json()["access_token"]
         else:
             raise Exception("Authentication failed")
 
+    def user_to_permanent(self, username, password):
+        """Convert a temporary token to a real token."""
+        
+        json_data = {
+        "temp_username": self.username,
+        "temp_password": self.password,
+        "new_username": username,
+        "new_password": password
+    }
+        response = requests.post(f"{self.base_url}/convert-to-permanent", json=json_data)
+        response.raise_for_status()
+        self.username = username
+        self.password = password
+        
+    
     def _get_headers(self):
         """Generate headers dict including the Authorization header."""
         return {"Authorization": f"Bearer {self.token}"}

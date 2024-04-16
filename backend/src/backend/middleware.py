@@ -32,31 +32,47 @@ def get_current_user_db(token: str = Depends(oauth2_scheme)) -> FileDB:
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+@app.post("/create-temp-user")
+def create_temp_user():
+    temp_username, temp_password = auth_store.create_temp_user()
+    access_token = auth_store.create_access_token(
+        data={"sub": temp_username},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    return {"access_token": access_token, "username": temp_username, "token_type": "bearer", "password":temp_password}
+
 
 @app.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     username = form_data.username
     password = form_data.password
-    password_hash = auth_store.get_password_hash(password)
-    auth_store.register_user(username, password_hash)
-    if auth_store.validate_user(username, password_hash):
+    valid_user = auth_store.register_user(username, password)
+    if valid_user:
         access_token = auth_store.create_access_token(
             data={"sub": username},
-            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         )
         return {"access_token": access_token, "token_type": "bearer"}
+
+class ConversionData(BaseModel):
+    temp_username: str
+    temp_password: str
+    new_username: str
+    new_password: str
+
+@app.post("/convert-to-permanent")
+def convert_to_permanent(data: ConversionData):
+    if data.temp_username in auth_store.temp_users:
+        # Check temporary password; assume temp_users_db stores hashed passwords
+        if auth_store.temp_users[data.temp_username] != auth_store.hash_password(data.temp_password):
+            raise HTTPException(status_code=401, detail="Incorrect temporary password")
+        if data.new_username in auth_store.users_db:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        auth_store.users[data.new_username] = auth_store.hash_password(data.new_password)
+        del auth_store.user_dbs[data.temp_username]
+        return {"message": "User converted to permanent"}
     else:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
-
-
-@app.post("/token_temp")
-def login_temp():
-    username = auth_store.create_temp_user()
-    access_token = auth_store.create_access_token(
-        data={"sub": username},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+        raise HTTPException(status_code=404, detail="Temporary user not found")
 
 class VectorSearchQuery(BaseModel):
     query_texts: Optional[List[str]] = None

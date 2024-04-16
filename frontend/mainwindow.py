@@ -30,7 +30,7 @@ from backend.client import FileDBClient, AuthFileDBClient
 from pathlib import Path
 
 # filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
-filedb = AuthFileDBClient(username="admin", password="admin")
+filedb = AuthFileDBClient()
 
 
 class DocumentStandardItemModel(QtGui.QStandardItemModel):

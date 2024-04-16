@@ -1,16 +1,16 @@
 from backend.userdb import UserDBs
-
-SECRET_KEY = "This is a secret key"
-ALGORITHM = "HS256"
 from datetime import datetime, timedelta
 import jwt
 import hashlib
+import uuid
 
+SECRET_KEY = "This is a secret key"
+ALGORITHM = "HS256"
 
 class AuthStore:
     def __init__(self, user_dbs):
         self.users = {}  # This stores username to password hash mappings
-        self.temp_users = set()  # This stores temporary users
+        self.temp_users = {}  # This stores temporary users
         self.user_dbs = user_dbs
 
     def register_user(self, username: str, password_hash: str):
@@ -21,6 +21,8 @@ class AuthStore:
 
     def validate_user(self, username: str, password_hash: str):
         if username in self.users and self.users[username] == password_hash:
+            return True
+        if username in self.temp_users and self.temp_users[username] == password_hash:
             return True
         return False
 
@@ -41,8 +43,8 @@ class AuthStore:
         return hashlib.sha256(password.encode()).hexdigest()
 
     def create_temp_user(self):
-        import uuid
 
         temp_username = str(uuid.uuid4())
-        self.temp_users.add(temp_username)
-        return temp_username
+        temp_password = str(uuid.uuid4())
+        self.temp_users[temp_username] = temp_password
+        return temp_username, temp_password
