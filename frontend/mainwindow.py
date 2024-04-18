@@ -43,10 +43,50 @@ class DocumentStandardItemModel(QtGui.QStandardItemModel):
 
         self.show()
 
+class LoginWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Login")
+        self.username_label = QLabel("Username:")
+        self.username_edit = QLineEdit()
+        self.password_label = QLabel("Password:")
+        self.password_edit = QLineEdit()
+        self.password_edit.setEchoMode(QLineEdit.Password)
+        self.login_button = QPushButton("Login")
+        self.login_button.clicked.connect(self.login)
+        self.guest_button = QPushButton("Guest Login")
+        self.guest_button.clicked.connect(self.guest_login)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.username_label)
+        layout.addWidget(self.username_edit)
+        layout.addWidget(self.password_label)
+        layout.addWidget(self.password_edit)
+        layout.addWidget(self.login_button)
+        layout.addWidget(self.guest_button)
+
+        self.setLayout(layout)
+
+    def login(self):
+        username_input = self.username_edit.text()
+        password_input = self.password_edit.text()
+
+        # Make a request to the ChromaDB backend for authentication
+        # filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
+        filedb.user_to_permanent(username=admin, password=admin)
+        self.close()
+        #if filedb.login(username, password):
+            #QMessageBox.information(self, "Login", "Login successful!")
+            #self.close()
+        #else:
+            #QMessageBox.warning(self, "Login", "Invalid username or password!")
+
+    def guest_login(self):
+        self.close() 
 
 class UI(QMainWindow):
     def __init__(self):
-        super(UI, self).__init__()
+        super(self).__init__()
 
         self.documents: List[Document] = []
 
@@ -117,7 +157,19 @@ class UI(QMainWindow):
         self.treeView.expand(folderIndex)
 
         self.treeView.scrollTo(folderIndex, QTreeView.EnsureVisible)
-    
+
+      # Initialize login widget
+        self.login_widget = LoginWidget()
+        self.login_widget.login_button.clicked.connect(self.showMainUI)
+        self.login_widget.guest_button.clicked.connect(self.showMainUI)
+
+        # Show login widget
+        self.login_widget.show()
+
+    def showMainUI(self):
+        # Show main UI after successful login
+        self.show()
+
     def pushFileStack(self, filePath):
         fileExtension = pathlib.Path(filePath).suffix
         if fileExtension in [".pdf", ".txt", ".html"]:
@@ -298,6 +350,8 @@ class UI(QMainWindow):
             event.ignore()
 
 
+
+
 if __name__ == "__main__":
     import sys
 
@@ -328,5 +382,5 @@ if __name__ == "__main__":
 
     # ui.setupUi(MainWindow)
     # MainWindow.show()
-    ui.show()
+    # ui.show()
     sys.exit(app.exec_())
