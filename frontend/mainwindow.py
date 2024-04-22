@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (
+    QPushButton,
     QApplication,
     QMainWindow,
     QLineEdit,
@@ -16,6 +17,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
 from PyQt5.QtCore import QItemSelectionModel
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from PyQt5.QtCore import QUrl, QMimeData, Qt
@@ -73,7 +75,7 @@ class LoginWidget(QWidget):
 
         # Make a request to the ChromaDB backend for authentication
         # filedb = backend.fileio.FileDB(folder="../sample/sample_files",chroma_dir="../sample/chroma")
-        filedb.user_to_permanent(username=admin, password=admin)
+        filedb.user_to_permanent(username=username_input, password=password_input)
         self.close()
         #if filedb.login(username, password):
             #QMessageBox.information(self, "Login", "Login successful!")
@@ -86,7 +88,7 @@ class LoginWidget(QWidget):
 
 class UI(QMainWindow):
     def __init__(self):
-        super(self).__init__()
+        super(UI, self).__init__()
 
         self.documents: List[Document] = []
 

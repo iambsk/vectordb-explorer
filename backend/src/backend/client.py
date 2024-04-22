@@ -50,7 +50,7 @@ class FileDBClient:
 
 
 class AuthFileDBClient(FileDBClient):
-    def __init__(self, username: str = "", password: str = "", base_url="http://127.0.0.1:8000"):
+    def __init__(self, username: str = None, password: str = "", base_url="http://127.0.0.1:8000"):
         super().__init__(base_url)
         
         self.username = username
