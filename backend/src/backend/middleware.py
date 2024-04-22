@@ -60,15 +60,15 @@ class ConversionData(BaseModel):
     new_username: str
     new_password: str
 
-@app.post("/convert-to-permanent")
+@app.post("/convert-to-permanent/")
 def convert_to_permanent(data: ConversionData):
     if data.temp_username in auth_store.temp_users:
         # Check temporary password; assume temp_users_db stores hashed passwords
-        if auth_store.temp_users[data.temp_username] != auth_store.hash_password(data.temp_password):
+        if auth_store.temp_users[data.temp_username] != data.temp_password:
             raise HTTPException(status_code=401, detail="Incorrect temporary password")
-        if data.new_username in auth_store.users_db:
+        if data.new_username in auth_store.user_dbs:
             raise HTTPException(status_code=400, detail="Username already taken")
-        auth_store.users[data.new_username] = auth_store.hash_password(data.new_password)
+        auth_store.users[data.new_username] = auth_store.get_password_hash(data.new_password)
         del auth_store.user_dbs[data.temp_username]
         return {"message": "User converted to permanent"}
     else:
