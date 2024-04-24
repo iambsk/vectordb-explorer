@@ -33,6 +33,13 @@ class UserDBs:
         del self.user_dbs[user_id]
         return None
 
+    def rename_user_db(self, old_user_id: str, new_user_id: str) -> None:
+        self.user_dbs[old_user_id].rename_folder(f"{self.folder_prefix}/{new_user_id}")
+        self.user_dbs[old_user_id].rename_chroma_dir(f"{self.chroma_dir}/{new_user_id}")
+        
+        
+
+    
     def list_user_dbs(self) -> list:
         return list(self.user_dbs.keys())
     
@@ -40,6 +47,7 @@ class UserDBs:
         for user_id, user_db in self.user_dbs.items():
             user_db.sync()
         return None
+    
     
     def __getitem__(self, user_id: str) -> FileDB:
         return self.get_user_db(user_id)

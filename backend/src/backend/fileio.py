@@ -22,8 +22,6 @@ class FileDB:
         # Ensure the chroma_dir exists
         os.makedirs(self.chroma_dir, exist_ok=True)
 
-        self.chroma_dir = str(Path(chroma_dir).resolve().absolute())
-        print(f"Watching folder: {self.folder}")
         # the persistent chromadb location, this is going to be an sqlite file
         self.chroma_client = chromadb.PersistentClient(
             path=chroma_dir
@@ -148,6 +146,47 @@ class FileDB:
         print(f"Deleted {path}")
         print(f"Filedirs: {self.files}")
         print("Driectory contents: ", os.listdir(self.folder))
+    
+    def rename_folder(self, new_folder: str):
+        new_folder = str(Path(new_folder).resolve().absolute())
+        try:
+            os.rename(self.folder, new_folder)
+        except FileExistsError:
+            pass
+            
+        self.folder = new_folder
+        self.sync()
+    
+    def rename_chroma_dir(self, new_chroma_dir: str):
+        new_chroma_dir = str(Path(new_chroma_dir).resolve().absolute())
+        self.chroma_dir = new_chroma_dir
+        collection_name = self.collection.name
+        if os.path.exists(new_chroma_dir):
+            self.chroma_client = chromadb.PersistentClient(path=new_chroma_dir)
+            self.collection = self.chroma_client.get_or_create_collection(
+                name=collection_name
+            )
+            return 
+        # Else Delete it
+        del self.chroma_client
+        del self.collection.name
+        # Create a temp client to force the unloading of the old one (gc no worky)
+        self.chroma_client = chromadb.PersistentClient(path=f'chroma_dir/nil')
+        self.collection = self.chroma_client.get_or_create_collection(
+            name=collection_name
+        )
+        os.mkdir(new_chroma_dir)
+        shutil.move(self.chroma_dir, new_chroma_dir)
+        # delete the temp
+        del self.chroma_client
+        del self.collection
+        #create new one
+        self.chroma_client = chromadb.PersistentClient(path=new_chroma_dir)
+        self.collection = self.chroma_client.get_or_create_collection(
+            name=collection_name
+        )
+        #sync to make sure everythings fine
+        self.sync()
     
     def __del__(self):
         self.chroma_client.reset()

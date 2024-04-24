@@ -48,3 +48,4 @@ class AuthStore:
         temp_password = str(uuid.uuid4())
         self.temp_users[temp_username] = temp_password
         return temp_username, temp_password
+

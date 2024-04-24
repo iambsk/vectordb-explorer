@@ -170,6 +170,13 @@ class UI(QMainWindow):
 
     def showMainUI(self):
         # Show main UI after successful login
+        print(f"filedb folder {filedb.folder}")
+        folderIndex = self.model.index(filedb.folder)
+        self.treeView.expand(folderIndex)
+        self.treeView.scrollTo(folderIndex, QTreeView.EnsureVisible)
+        self.treeView.setRootIndex(
+            self.model.index(filedb.folder)
+        )
         self.show()
 
     def pushFileStack(self, filePath):

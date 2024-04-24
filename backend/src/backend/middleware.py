@@ -46,7 +46,7 @@ def create_temp_user():
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     username = form_data.username
     password = form_data.password
-    valid_user = auth_store.register_user(username, password)
+    valid_user = auth_store.validate_user(username, auth_store.get_password_hash(password))
     if valid_user:
         access_token = auth_store.create_access_token(
             data={"sub": username},
@@ -69,8 +69,13 @@ def convert_to_permanent(data: ConversionData):
         if data.new_username in auth_store.user_dbs:
             raise HTTPException(status_code=400, detail="Username already taken")
         auth_store.users[data.new_username] = auth_store.get_password_hash(data.new_password)
+        auth_store.user_dbs.rename_user_db(data.temp_username, data.new_username)
         del auth_store.user_dbs[data.temp_username]
-        return {"message": "User converted to permanent"}
+        access_token = auth_store.create_access_token(
+        data={"sub": data.new_username},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+        return {"access_token": access_token, "token_type": "bearer"}
     else:
         raise HTTPException(status_code=404, detail="Temporary user not found")
 

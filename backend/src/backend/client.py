@@ -84,9 +84,15 @@ class AuthFileDBClient(FileDBClient):
         "new_password": password
     }
         response = requests.post(f"{self.base_url}/convert-to-permanent", json=json_data)
-        response.raise_for_status()
+        if response.status_code == 400:
+            pass
+        elif response.status_code == 200:
+            pass
+        else:
+            raise Exception("Conversion failed")
         self.username = username
         self.password = password
+        self.token = self.get_token()
         
     
     def _get_headers(self):
