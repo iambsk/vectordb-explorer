@@ -32,6 +32,9 @@ QWidget:item:hover
     padding: 0px;
     background-color: transparent !important;
 }
+QWidget::item:selected:hover {
+    color: #ffffff; 
+}
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
