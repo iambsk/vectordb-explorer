@@ -149,10 +149,11 @@ class FileDB:
     
     def rename_folder(self, new_folder: str):
         new_folder = str(Path(new_folder).resolve().absolute())
-        try:
+        if os.path.exists(new_folder):
+            shutil.copytree(self.folder, new_folder)
+            shutil.rmtree(self.folder)
+        else:
             os.rename(self.folder, new_folder)
-        except FileExistsError:
-            pass
             
         self.folder = new_folder
         self.sync()

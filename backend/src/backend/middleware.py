@@ -68,7 +68,7 @@ def convert_to_permanent(data: ConversionData):
             raise HTTPException(status_code=401, detail="Incorrect temporary password")
         if data.new_username in auth_store.user_dbs:
             raise HTTPException(status_code=400, detail="Username already taken")
-        auth_store.users[data.new_username] = auth_store.get_password_hash(data.new_password)
+        auth_store.register_user(data.new_username, auth_store.get_password_hash(data.new_password))
         auth_store.user_dbs.rename_user_db(data.temp_username, data.new_username)
         del auth_store.user_dbs[data.temp_username]
         access_token = auth_store.create_access_token(
